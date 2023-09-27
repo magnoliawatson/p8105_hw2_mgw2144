@@ -1,0 +1,23 @@
+---
+title: "p8105_hw2_mgw2144"
+output: github_document
+date: "2023-09-27"
+---
+
+```{r}
+library(here)
+library(tidyverse)
+rm(list=ls())
+project.folder=
+  paste0(print(here::here()),'/')
+```
+
+Problem 1
+
+```{r}
+pols_month_df =
+  read.csv(paste0(project.folder,"data/pols-month.csv")) %>% 
+  janitor::clean_names()%>% 
+  separate(mon, into = c("year", "month", "day"))
+```
+
