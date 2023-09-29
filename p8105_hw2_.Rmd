@@ -20,25 +20,22 @@ pols_month_df =
   janitor::clean_names()%>% 
   separate(mon, into = c("year", "month", "day")) %>% 
   mutate(
-    month = replace(month, month == "01", "january"),
-    month = replace(month, month == "02", "february"),
-    month = replace(month, month == "03", "march"),
-    month = replace(month, month == "04", "april"),
+    month = replace(month, month == "01", "jan"),
+    month = replace(month, month == "02", "feb"),
+    month = replace(month, month == "03", "mar"),
+    month = replace(month, month == "04", "apr"),
     month = replace(month, month == "05", "may"),
-    month = replace(month, month == "06", "june"),
-    month = replace(month, month == "07", "july"),
-    month = replace(month, month == "08", "august"),
-    month = replace(month, month == "09", "september"),
-    month = replace(month, month == "10", "october"),
-    month = replace(month, month == "11", "november"),
-    month = replace(month, month == "12", "december")
+    month = replace(month, month == "06", "jun"),
+    month = replace(month, month == "07", "jul"),
+    month = replace(month, month == "08", "aug"),
+    month = replace(month, month == "09", "sep"),
+    month = replace(month, month == "10", "oct"),
+    month = replace(month, month == "11", "nov"),
+    month = replace(month, month == "12", "dec")
   ) %>% 
   mutate(president = if_else(prez_gop ==1, "gop", "dem")) %>% 
    select(-day, -prez_gop, -prez_dem)
 ```
-#########
-create a president variable taking values gop and dem, and remove prez_dem and prez_gop
-#########
 
 ```{r}
 snp_df = 
@@ -46,18 +43,18 @@ snp_df =
   janitor::clean_names() %>% 
   separate(date, into = c("month", "day", "year")) %>% 
   mutate(
-    month = replace(month, month == "1", "january"),
-    month = replace(month, month == "2", "february"),
-    month = replace(month, month == "3", "march"),
-    month = replace(month, month == "4", "april"),
+    month = replace(month, month == "1", "jan"),
+    month = replace(month, month == "2", "feb"),
+    month = replace(month, month == "3", "mar"),
+    month = replace(month, month == "4", "apr"),
     month = replace(month, month == "5", "may"),
-    month = replace(month, month == "6", "june"),
-    month = replace(month, month == "7", "july"),
-    month = replace(month, month == "8", "august"),
-    month = replace(month, month == "9", "september"),
-    month = replace(month, month == "10", "october"),
-    month = replace(month, month == "11", "november"),
-    month = replace(month, month == "12", "december")
+    month = replace(month, month == "6", "jun"),
+    month = replace(month, month == "7", "jul"),
+    month = replace(month, month == "8", "aug"),
+    month = replace(month, month == "9", "sep"),
+    month = replace(month, month == "10", "oct"),
+    month = replace(month, month == "11", "nov"),
+    month = replace(month, month == "12", "dec")
   ) %>% 
   select(-day) %>% 
   relocate(year, month)
@@ -65,7 +62,12 @@ snp_df =
 ```{r}
 unemployment_df = 
  read.csv(paste0(project.folder,"data/unemployment.csv")) %>% 
-  janitor::clean_names() 
+  janitor::clean_names() %>% 
+  pivot_longer(
+    jan:dec,
+    names_to = "month",
+    values_to = "percent_unemployed"
+  )
 ```
 
 
