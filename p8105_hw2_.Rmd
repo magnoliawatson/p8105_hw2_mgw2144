@@ -5,18 +5,14 @@ date: "2023-09-27"
 ---
 
 ```{r}
-library(here)
 library(tidyverse)
-rm(list=ls())
-project.folder=
-  paste0(print(here::here()),'/')
 ```
 
 Problem 1
 
 ```{r}
 pols_month_df =
-  read.csv(paste0(project.folder,"data/pols-month.csv")) %>% 
+  read.csv("C:/Users/magno/Desktop/p8105_hw2_mgw2144/data/pols-month.csv") %>% 
   janitor::clean_names()%>% 
   separate(mon, into = c("year", "month", "day")) %>% 
   mutate(
@@ -39,7 +35,7 @@ pols_month_df =
 
 ```{r}
 snp_df = 
- read.csv(paste0(project.folder,"data/snp.csv")) %>% 
+ read.csv("C:/Users/magno/Desktop/p8105_hw2_mgw2144/data/snp.csv") %>% 
   janitor::clean_names() %>% 
   separate(date, into = c("month", "day", "year")) %>% 
   mutate(
@@ -61,7 +57,7 @@ snp_df =
 ```
 ```{r}
 unemployment_df = 
- read.csv(paste0(project.folder,"data/unemployment.csv")) %>% 
+ read.csv("C:/Users/magno/Desktop/p8105_hw2_mgw2144/data/unemployment.csv") %>% 
   janitor::clean_names() %>% 
   pivot_longer(
     jan:dec,
@@ -84,10 +80,28 @@ will come backt to this
 Problem 2 
 ```{r}
 mr_trash_wheel=
-  readxl::read_excel(paste0(project.folder,"data/202207 Trash Wheel Collection Data.xlsx")) %>% 
+  readxl::read_excel("C:/Users/magno/Desktop/p8105_hw2_mgw2144/data/202207 Trash Wheel Collection Data.xlsx") %>%
   janitor::clean_names() %>% 
   select(-"x15", -"x16") %>% 
   mutate(homes_powered=((weight_tons*500)/1000)) %>% 
-  mutate(trash_data = "mr_trash_wheel")
+  mutate(trash_data = "mr_tw")
+```
+```{r}
+professor_trash_wheel=
+  readxl::read_excel("C:/Users/magno/Desktop/p8105_hw2_mgw2144/data/202207 Trash Wheel Collection Data.xlsx", sheet=2) %>% 
+  janitor::clean_names() %>% 
+  mutate(homes_powered=((weight_tons*500)/1000)) %>% 
+  mutate(trash_data = "professor_tw")
+```
+####
+can't figure out error will come back to it
+####
+
+Problem 3
+
+```{r}
+mci_baseline=
+  read.csv("C:/Users/magno/Desktop/p8105_hw2_mgw2144/data/MCI_baseline.csv", skip = 1) %>% 
+  janitor::clean_names()
 ```
 
