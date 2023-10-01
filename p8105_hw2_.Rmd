@@ -70,4 +70,24 @@ unemployment_df =
   )
 ```
 
+merge step 
+
+```{r}
+pols_snp_merge=
+  left_join(pols_month_df, snp_df, by = "year")
+```
+
+#### 
+will come backt to this
+####
+
+Problem 2 
+```{r}
+mr_trash_wheel=
+  readxl::read_excel(paste0(project.folder,"data/202207 Trash Wheel Collection Data.xlsx")) %>% 
+  janitor::clean_names() %>% 
+  select(-"x15", -"x16") %>% 
+  mutate(homes_powered=((weight_tons*500)/1000)) %>% 
+  mutate(trash_data = "mr_trash_wheel")
+```
 
