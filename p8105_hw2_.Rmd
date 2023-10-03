@@ -157,6 +157,7 @@ Important steps in the import process include utilizing the read.csv() function 
 mci_amyloid=
   read.csv(paste0(project.folder,"/data/mci_amyloid.csv"), skip = 1) %>% 
   janitor::clean_names() %>% 
+  rename(id = "study_id") %>% 
   mutate(
     baseline = recode(baseline, Na = "NA"),
     time_2 = recode(time_2, Na = "NA"),
@@ -171,9 +172,22 @@ mci_amyloid=
     !is.na(time_8))
 ```
 
-The import process for this data set involves reading in the csv file for the mci_amyloid data utilizing its relative path name. Some of the prominent features of the dataset include patient ID number, and the time elapsed since the study baseline to the visit where the biomarker Amyloid _ 42/40 ratio was measured marked at baseline and years 2, 4, 6, and 8. 
+The import process for this data set involves reading in the csv file for the mci_amyloid data utilizing its relative path name. Some of the prominent features of the dataset include patient ID number, and the time elapsed since the study baseline to the visit where the biomarker Amyloid _ 42/40 ratio was measured marked at baseline and years 2, 4, 6, and 8. In cleaning the dataset I removed individuals with missing values from the dataset and changed the column name of participant IDs from "study_id" to "id" to match the "id" column name in the baseline data. 
 
 ```{r}
 
 ```
+###
+Check whether some participants appear in only the baseline or amyloid datasets, and comment on your findings. 
+###
 
+```{r}
+mci_combine=
+  inner_join(mci_baseline, mci_amyloid, by = "id")
+```
+
+The dataset "mci_combine" created by merging only the data on participants in both the "mci_baseline" and "mci_amyloid" datasets has `r nrow(mci_combine)` particpants included. 
+
+###
+export the result as a CSV to your data directory. 
+###
