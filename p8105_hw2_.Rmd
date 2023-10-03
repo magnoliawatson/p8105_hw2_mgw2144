@@ -86,9 +86,10 @@ Problem 2
 mr_trash_wheel=
   readxl::read_excel(paste0(project.folder,"/data/202309 Trash Wheel Collection Data.xlsx"), sheet = 1, range = "A2:N586") %>%
   janitor::clean_names() %>% 
-  mutate(homes_powered=((weight_tons*500)/1000)) %>% 
-  mutate(trash_data = "mr_tw")%>% 
-  mutate(year = as.integer(year)) %>% 
+  mutate(
+    homes_powered=((weight_tons*500)/1000),
+    year = as.integer(year),
+    trash_data = "mr_tw")%>% 
   relocate(trash_data)
 ```
 
@@ -96,9 +97,10 @@ mr_trash_wheel=
 professor_trash_wheel=
   readxl::read_excel(paste0(project.folder,"/data/202309 Trash Wheel Collection Data.xlsx"), sheet=2, range = "A2:M108") %>% 
   janitor::clean_names() %>% 
-  mutate(homes_powered=((weight_tons*500)/1000)) %>% 
-  mutate(trash_data = "professor_tw") %>% 
-  mutate(year = as.integer(year)) %>% 
+  mutate(homes_powered=(
+    (weight_tons*500)/1000),
+    year = as.integer(year),
+    trash_data = "professor_tw")%>% 
   relocate(trash_data)
 ```
 
@@ -106,9 +108,10 @@ professor_trash_wheel=
 gwynnda_trash_wheel=
   readxl::read_excel(paste0(project.folder,"/data/202309 Trash Wheel Collection Data.xlsx"), sheet=4, range = "A2:L157") %>% 
   janitor::clean_names() %>% 
-  mutate(homes_powered=((weight_tons*500)/1000)) %>% 
-  mutate(trash_data = "gwynnda_tw")%>% 
-   mutate(year = as.integer(year)) %>% 
+  mutate(homes_powered=(
+    (weight_tons*500)/1000), 
+    year = as.integer(year), 
+    trash_data = "gwynnda_tw")%>% 
   relocate(trash_data)
 
 gwynnda_july_2021=
@@ -123,7 +126,7 @@ trash_wheel_total=
   janitor::clean_names()
 ```
 
-The collection of Mr. Trash Wheel datasets records information of a water-wheel vessel tht removed trash from the Inner Harbor in Baltimore, Maryland. The combined dataset created above contains information from the Mr. Trash Wheel, Professor Trash Wheel, and Gywnnda Trash Wheel datasets with a total of `r nrow(trash_wheel_total)` observations. The total weight of trash collected by Professor Trash Wheel was `r sum(professor_trash_wheel$weight_tons)` tons. The total number of cigarette butts collected by Gwynnda in July of 2021 is `r sum(gwynnda_july_2021$cigarette_butts)`.
+The collection of Mr. Trash Wheel datasets records information of a water-wheel vessel tht removed trash from the Inner Harbor in Baltimore, Maryland. The combined dataset created above contains information from the Mr. Trash Wheel, Professor Trash Wheel, and Gywnnda Trash Wheel datasets with a total of `r nrow(trash_wheel_total)` observations. The total weight of trash collected by Professor Trash Wheel was `r sum(pull(professor_trash_wheel, weight_tons))` tons. The total number of cigarette butts collected by Gwynnda in July of 2021 is `r sum(pull(gwynnda_july_2021, cigarette_butts))`.
 
 Problem 3
 
@@ -134,13 +137,37 @@ mci_baseline=
   mutate(sex = recode(sex, `1` = "male", `0`="female")) %>% 
   mutate(apoe4 = recode(apoe4, `1`="carrier", `0`="non-carrier")) %>% 
   filter(age_at_onset != ".") 
+
+mci_apoe_c=
+  mci_baseline %>% 
+  filter(sex == "female") %>% 
+  filter(apoe4 == "carrier") %>% 
+  mutate(apoe4 = recode(apoe4, "carrier" = 1))
+  
+mci_apoe_nc=
+  mci_baseline %>% 
+  filter(sex == "female") %>% 
+  filter(apoe4 == "non-carrier") %>% 
+   mutate(apoe4 = recode(apoe4, "non-carrier" = 1))
 ```
 
-Important steps in the import process include utilizing the read.csv() function to import the data so that it can be cleaned and manipulated. Important features of the dataset include patient ID number, sex, APOE4 gene carrier status, and age of MCI onset for participants. There were originally 483 participants recruited and `r nrow(mci_baseline)` of these participants developed MCI. The average baseline age is `r mean(mci_baseline$current_age)` years old. ____ percent of women in the study are APOE4 carriers. 
+Important steps in the import process include utilizing the read.csv() function to import the data so that it can be cleaned and manipulated. Important features of the dataset include patient ID number, sex, APOE4 gene carrier status, and age of MCI onset for participants. There were originally 483 participants recruited and `r nrow(mci_baseline)` of these participants developed MCI. The average baseline age is `r mean(pull(mci_baseline, current_age))` years old. `r (((sum(pull(mci_apoe_c, apoe4)))/((sum(pull(mci_apoe_nc, apoe4)))+(sum(pull(mci_apoe_c, apoe4)))))*100)` percent of women in the study are APOE4 carriers. 
 
 ```{r}
 mci_amyloid=
   read.csv(paste0(project.folder,"/data/mci_amyloid.csv"), skip = 1) %>% 
-  janitor::clean_names()
+  janitor::clean_names() %>% 
+  mutate(
+    baseline = recode(baseline, Na = "NA"),
+    time_2 = recode(time_2, Na = "NA"),
+    time_4 = recode(time_4, Na = "NA"),
+    time_6 = recode(time_6, Na = "NA"),
+    time_8 = recode(time_8, Na = "NA")) %>% 
+  filter(
+    !is.na(baseline),
+    !is.na(time_2),
+    !is.na(time_4),
+    !is.na(time_6),
+    !is.na(time_8))
 ```
 
