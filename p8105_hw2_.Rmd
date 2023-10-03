@@ -123,10 +123,14 @@ trash_wheel_total=
   bind_rows(mr_trash_wheel, professor_trash_wheel, gwynnda_trash_wheel) %>% 
   janitor::clean_names()
 ```
-```{r}
-summary(trash_wheel_total)
-```
 
+The collection of Mr. Trash Wheel datasets records information of a water-wheel vessel tht removed trash from the Inner Harbor in Baltimore, Maryland. The combined dataset created above contains information from the Mr. Trash Wheel, Professor Trash Wheel, and Gywnnda Trash Wheel datasets with a total of `r nrow(trash_wheel_total)` observations. The total weight of trash collected by Professor Trash Wheel was `r sum(professor_trash_wheel$weight_tons)` tons. The total number of cigarette butts collected by Gwynnda in July of 2021 is (insert inline).
+
+r sum(gwynnda_trash_wheel$cigarette_butts[month == "July" | year == "2021"]
+
+#### 
+HELP
+#### 
 
 Problem 3
 
