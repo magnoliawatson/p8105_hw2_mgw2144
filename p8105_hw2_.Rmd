@@ -171,3 +171,9 @@ mci_amyloid=
     !is.na(time_8))
 ```
 
+The import process for this data set involves reading in the csv file for the mci_amyloid data utilizing its relative path name. Some of the prominent features of the dataset include patient ID number, and the time elapsed since the study baseline to the visit where the biomarker Amyloid _ 42/40 ratio was measured marked at baseline and years 2, 4, 6, and 8. 
+
+```{r}
+
+```
+
