@@ -184,6 +184,6 @@ mci_combine=
 
 The dataset "mci_combine" was created by merging only the data on participants in both the "mci_baseline" and "mci_amyloid" datasets throug the inner_join() function. The combined dataset has `r nrow(mci_combine)` rows and `r ncol(mci_combine)` columns. The prominent variables in this dataset are patient id ("id"), age at baseline "current_age", sex, education level ("education"), whether or not they are an APoE4 gene carrier, age at onset of MCI, time in years from baseline when amyliod values were tested "time", and amyloid value at those time intervals. 
 
-###
-export the result as a CSV to your data directory. 
-###
+```{r}
+write_csv(mci_combine, "mci_combined_data.csv")
+```
