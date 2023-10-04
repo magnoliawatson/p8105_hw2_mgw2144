@@ -16,7 +16,7 @@ Problem 1
 
 ```{r}
 pols_month_df =
-  read.csv(paste0(project.folder,"/data/pols-month.csv")) %>% 
+  read_csv(paste0(project.folder,"/data/pols-month.csv")) %>% 
   janitor::clean_names()%>% 
   separate(mon, into = c("year", "month", "day")) %>% 
   mutate(
@@ -39,7 +39,7 @@ pols_month_df =
 
 ```{r}
 snp_df = 
- read.csv(paste0(project.folder,"/data/snp.csv")) %>% 
+ read_csv(paste0(project.folder,"/data/snp.csv")) %>% 
   janitor::clean_names() %>% 
   separate(date, into = c("month", "day", "year")) %>% 
   mutate(
@@ -61,7 +61,7 @@ snp_df =
 ```
 ```{r}
 unemployment_df = 
- read.csv(paste0(project.folder,"/data/unemployment.csv")) %>% 
+ read_csv(paste0(project.folder,"/data/unemployment.csv")) %>% 
   janitor::clean_names() %>% 
   pivot_longer(
     jan:dec,
@@ -132,50 +132,49 @@ Problem 3
 
 ```{r}
 mci_baseline=
-  read.csv(paste0(project.folder,"/data/MCI_baseline.csv"), skip = 1) %>% 
-  janitor::clean_names() %>% 
+  read_csv(paste0(project.folder,"/data/MCI_baseline.csv"), skip = 1) %>% 
+  janitor::clean_names() 
+
+mci_baseline_clean=
+  mci_baseline %>% 
   mutate(sex = recode(sex, `1` = "male", `0`="female")) %>% 
   mutate(apoe4 = recode(apoe4, `1`="carrier", `0`="non-carrier")) %>% 
-  filter(age_at_onset != ".") 
+  filter(age_at_onset > current_age | age_at_onset == ".") 
 
 mci_apoe_c=
-  mci_baseline %>% 
+  mci_baseline_clean %>% 
   filter(sex == "female") %>% 
   filter(apoe4 == "carrier") %>% 
   mutate(apoe4 = recode(apoe4, "carrier" = 1))
   
 mci_apoe_nc=
-  mci_baseline %>% 
+  mci_baseline_clean %>% 
   filter(sex == "female") %>% 
   filter(apoe4 == "non-carrier") %>% 
    mutate(apoe4 = recode(apoe4, "non-carrier" = 1))
 ```
 
-Important steps in the import process include utilizing the read.csv() function to import the data so that it can be cleaned and manipulated. Important features of the dataset include patient ID number, sex, APOE4 gene carrier status, and age of MCI onset for participants. There were originally 483 participants recruited and `r nrow(mci_baseline)` of these participants developed MCI. The average baseline age is `r mean(pull(mci_baseline, current_age))` years old. `r (((sum(pull(mci_apoe_c, apoe4)))/((sum(pull(mci_apoe_nc, apoe4)))+(sum(pull(mci_apoe_c, apoe4)))))*100)` percent of women in the study are APOE4 carriers. 
+Important steps in the import process include utilizing the read_csv() function to import the data so that it can be cleaned and manipulated. Important features of the dataset include patient ID number, sex, APOE4 gene carrier status, and age of MCI onset for participants. There were originally 483 participants recruited and `r nrow(mci_baseline_clean)` of these participants were MCI free at baseline. The average baseline age is `r mean(pull(mci_baseline, current_age))` years old. `r (((sum(pull(mci_apoe_c, apoe4)))/((sum(pull(mci_apoe_nc, apoe4)))+(sum(pull(mci_apoe_c, apoe4)))))*100)` percent of women in the study are APOE4 carriers. 
 
 ```{r}
 mci_amyloid=
-  read.csv(paste0(project.folder,"/data/mci_amyloid.csv"), skip = 1) %>% 
+  read_csv(paste0(project.folder,"/data/mci_amyloid.csv"), skip = 1) %>% 
   janitor::clean_names() %>% 
-  rename(id = "study_id") %>% 
-  mutate(
-    baseline = recode(baseline, Na = "NA"),
-    time_2 = recode(time_2, Na = "NA"),
-    time_4 = recode(time_4, Na = "NA"),
-    time_6 = recode(time_6, Na = "NA"),
-    time_8 = recode(time_8, Na = "NA")) %>% 
-  filter(
-    !is.na(baseline),
-    !is.na(time_2),
-    !is.na(time_4),
-    !is.na(time_6),
-    !is.na(time_8))
+  rename("time_0" = baseline) %>%  
+  rename("id" = study_id) %>% 
+  pivot_longer(
+    time_0:time_8,
+    names_to = "time",
+    values_to = "amyloid_value"
+  ) 
 ```
-
 The import process for this data set involves reading in the csv file for the mci_amyloid data utilizing its relative path name. Some of the prominent features of the dataset include patient ID number, and the time elapsed since the study baseline to the visit where the biomarker Amyloid _ 42/40 ratio was measured marked at baseline and years 2, 4, 6, and 8. In cleaning the dataset I removed individuals with missing values from the dataset and changed the column name of participant IDs from "study_id" to "id" to match the "id" column name in the baseline data. 
 
-```{r}
+relavent features: rows and columns, variables present, why results came from what join 
 
+```{r}
+mci_unique=
+  anti_join(mci_baseline_clean, mci_amyloid, by = "id")
 ```
 ###
 Check whether some participants appear in only the baseline or amyloid datasets, and comment on your findings. 
@@ -183,7 +182,7 @@ Check whether some participants appear in only the baseline or amyloid datasets,
 
 ```{r}
 mci_combine=
-  inner_join(mci_baseline, mci_amyloid, by = "id")
+  inner_join(mci_baseline_clean, mci_amyloid, by = "id")
 ```
 
 The dataset "mci_combine" created by merging only the data on participants in both the "mci_baseline" and "mci_amyloid" datasets has `r nrow(mci_combine)` particpants included. 
