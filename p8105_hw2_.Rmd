@@ -15,73 +15,59 @@ project.folder=
 Problem 1
 
 ```{r}
-pols_month_df =
-  read_csv(paste0(project.folder,"/data/pols-month.csv")) %>% 
-  janitor::clean_names()%>% 
-  separate(mon, into = c("year", "month", "day")) %>% 
+
+month_df = 
+  tibble(
+    month_num = 1:12,
+    month_abb = month.abb,
+    month = month.name
+  )
+
+pols_df =
+  read_csv(paste0(project.folder,"/data/pols-month.csv")) |>
+  separate(mon, into = c("year", "month_num", "day"), convert = TRUE) |>
   mutate(
-    month = replace(month, month == "01", "jan"),
-    month = replace(month, month == "02", "feb"),
-    month = replace(month, month == "03", "mar"),
-    month = replace(month, month == "04", "apr"),
-    month = replace(month, month == "05", "may"),
-    month = replace(month, month == "06", "jun"),
-    month = replace(month, month == "07", "jul"),
-    month = replace(month, month == "08", "aug"),
-    month = replace(month, month == "09", "sep"),
-    month = replace(month, month == "10", "oct"),
-    month = replace(month, month == "11", "nov"),
-    month = replace(month, month == "12", "dec")
-  ) %>% 
-  mutate(president = if_else(prez_gop ==1, "gop", "dem")) %>% 
-   select(-day, -prez_gop, -prez_dem)
+    president = recode(prez_gop, "0" = "dem", "1" = "gop", "2" = "gop")) |>
+  left_join(x = _, y = month_df) |> 
+  select(year, month, everything(), -day, -prez_gop, -prez_dem)
 ```
 
 ```{r}
 snp_df = 
- read_csv(paste0(project.folder,"/data/snp.csv")) %>% 
-  janitor::clean_names() %>% 
-  separate(date, into = c("month", "day", "year")) %>% 
+ read_csv(paste0(project.folder,"/data/snp.csv"),
+  col_types = cols(date = col_date(format = "%m/%d/%y"))) |>
+  separate(date, into = c("year", "month_num", "day"), convert = TRUE) |>
   mutate(
-    month = replace(month, month == "1", "jan"),
-    month = replace(month, month == "2", "feb"),
-    month = replace(month, month == "3", "mar"),
-    month = replace(month, month == "4", "apr"),
-    month = replace(month, month == "5", "may"),
-    month = replace(month, month == "6", "jun"),
-    month = replace(month, month == "7", "jul"),
-    month = replace(month, month == "8", "aug"),
-    month = replace(month, month == "9", "sep"),
-    month = replace(month, month == "10", "oct"),
-    month = replace(month, month == "11", "nov"),
-    month = replace(month, month == "12", "dec")
-  ) %>% 
-  select(-day) %>% 
-  relocate(year, month)
+    year = if_else(year > 2023, year - 100, year)) |> 
+  left_join(x = _, y = month_df) |> 
+  select(year, month, close) 
 ```
 ```{r}
 unemployment_df = 
  read_csv(paste0(project.folder,"/data/unemployment.csv")) %>% 
-  janitor::clean_names() %>% 
+  rename(year = Year) %>% 
   pivot_longer(
-    jan:dec,
-    names_to = "month",
-    values_to = "percent_unemployed"
-  )
+    Jan:Dec,
+    names_to = "month_abb",
+    values_to = "unemployment"
+  ) |> 
+  left_join(x = _, y = month_df) |> 
+  select(year, month, unemployment)
 ```
 
 merge step 
 
 ```{r}
-pols_snp_merge=
-  left_join(pols_month_df, snp_df, by = "year")
-```
+data_538 = 
+  left_join(pols_df, snp_df) |>
+  left_join(x = _, y = unemployment_df)
 
-#### 
-will come backt to this
-####
+str(data_538)
+```
+The `pols_df` data has `r nrow(pols_df)` observations and `r ncol(pols_df)` variables and tells us about the party affiliation distribution (democrat or republican) for governors and senators for a given year from years `r pols_df |> pull(year) |> min()` to `r pols_df |> pull(year) |> max()`. The dataset also tells us if the sitting president was a democrat or republican. The `snp_df` data has `r nrow(snp_df)` observations and `r ncol(snp_df)` variables, ranging from years `r snp_df |> pull(year) |> min()` to `r snp_df |> pull(year) |> max()`. The `unemployment_df` data has `r nrow(unemployment_df)` observations and `r ncol(unemployment_df)` variables ranging from years `r unemployment_df |> pull(year) |> min()` to `r unemployment_df |> pull(year) |> max()`. In Januarys in or after 1975 in which a democrat was president, the average unemployment rate was `r filter(data_538, month == "January", year >= 1975, president == "dem") |> pull(unemployment) |> mean() |> round(2)`.  The average unemployment rate over the same time period in which a republican was president was `r filter(data_538, month == "January", year >= 1975, president == "gop") |> pull(unemployment) |> mean() |> round(2)`.
 
 Problem 2 
+
 ```{r}
 mr_trash_wheel=
   readxl::read_excel(paste0(project.folder,"/data/202309 Trash Wheel Collection Data.xlsx"), sheet = 1, range = "A2:N586") %>%
@@ -154,7 +140,7 @@ mci_apoe_nc=
    mutate(apoe4 = recode(apoe4, "non-carrier" = 1))
 ```
 
-Important steps in the import process include utilizing the read_csv() function to import the data so that it can be cleaned and manipulated. Important features of the dataset include patient ID number, sex, APOE4 gene carrier status, and age of MCI onset for participants. There were originally 483 participants recruited and `r nrow(mci_baseline_clean)` of these participants were MCI free at baseline. The average baseline age is `r mean(pull(mci_baseline, current_age))` years old. `r (((sum(pull(mci_apoe_c, apoe4)))/((sum(pull(mci_apoe_nc, apoe4)))+(sum(pull(mci_apoe_c, apoe4)))))*100)` percent of women in the study are APOE4 carriers. 
+Important steps in the import process include utilizing the read_csv() function to import the data so that it can be cleaned and manipulated. Important features of the dataset include patient ID number, sex, APOE4 gene carrier status, and age of MCI onset for participants. There were originally 483 participants recruited and `r nrow(mci_baseline_clean)` of these participants were MCI free at baseline. The average baseline age is `r mean(pull(mci_baseline_clean, current_age))` years old. `r (((sum(pull(mci_apoe_c, apoe4)))/((sum(pull(mci_apoe_nc, apoe4)))+(sum(pull(mci_apoe_c, apoe4)))))*100)` percent of women in the study are APOE4 carriers. 
 
 ```{r}
 mci_amyloid=
@@ -168,7 +154,7 @@ mci_amyloid=
     values_to = "amyloid_value"
   ) 
 ```
-The import process for this data set involves reading in the csv file for the mci_amyloid data utilizing its relative path name. Some of the prominent features of the dataset include patient ID number, and the time elapsed since the study baseline to the visit where the biomarker Amyloid _ 42/40 ratio was measured marked at baseline and years 2, 4, 6, and 8, and the amyloid value recorded at these times. In cleaning the dataset I changed the column name of participant IDs from "study_id" to "id" to match the "id" column name in the baseline data and changed the "baseline" variable to "time_0". The new dataset has `r nrow(mci_amyloid)` rows and `r ncol(mci_amyloid)` columns. I used the pivot_long function to change the time column names into variables in a new "time" column with their corresponding amyloid values for each unique patient ID number. 
+The import process for this data set involves reading in the csv file for the mci_amyloid data utilizing its relative path name. Some of the prominent features of the dataset include patient ID number, and the time elapsed since the study baseline to the visit where the biomarker Amyloid _ 42/40 ratio was measured marked at baseline and years 2, 4, 6, and 8, and the amyloid value recorded at these times. In cleaning the dataset I changed the column name of participant IDs from "study_id" to "id" to match the "id" column name in the baseline data and changed the "baseline" variable to "time_0". The new dataset has `r nrow(mci_amyloid)/5` rows and `r ncol(mci_amyloid)` columns. I used the pivot_long function to change the time column names into variables in a new "time" column with their corresponding amyloid values for each unique patient ID number. 
 
 ```{r}
 mci_unique=
@@ -182,7 +168,7 @@ mci_combine=
   inner_join(mci_baseline_clean, mci_amyloid, by = "id")
 ```
 
-The dataset "mci_combine" was created by merging only the data on participants in both the "mci_baseline" and "mci_amyloid" datasets throug the inner_join() function. The combined dataset has `r nrow(mci_combine)` rows and `r ncol(mci_combine)` columns. The prominent variables in this dataset are patient id ("id"), age at baseline "current_age", sex, education level ("education"), whether or not they are an APoE4 gene carrier, age at onset of MCI, time in years from baseline when amyliod values were tested "time", and amyloid value at those time intervals. 
+The dataset "mci_combine" was created by merging only the data on participants in both the "mci_baseline" and "mci_amyloid" datasets throug the inner_join() function. The combined dataset has `r nrow(mci_combine)/5` rows and `r ncol(mci_combine)` columns. The prominent variables in this dataset are patient id ("id"), age at baseline "current_age", sex, education level ("education"), whether or not they are an APoE4 gene carrier, age at onset of MCI, time in years from baseline when amyliod values were tested "time", and amyloid value at those time intervals. 
 
 ```{r}
 write_csv(mci_combine, "mci_combined_data.csv")
