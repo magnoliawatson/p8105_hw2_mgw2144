@@ -73,7 +73,7 @@ mr_trash_wheel=
   readxl::read_excel(paste0(project.folder,"/data/202309 Trash Wheel Collection Data.xlsx"), sheet = 1, range = "A2:N586") %>%
   janitor::clean_names() %>% 
   mutate(
-    homes_powered=((weight_tons*500)/1000),
+    homes_powered=((weight_tons*500)/30),
     year = as.integer(year),
     trash_data = "mr_tw")%>% 
   relocate(trash_data)
@@ -84,7 +84,7 @@ professor_trash_wheel=
   readxl::read_excel(paste0(project.folder,"/data/202309 Trash Wheel Collection Data.xlsx"), sheet=2, range = "A2:M108") %>% 
   janitor::clean_names() %>% 
   mutate(homes_powered=(
-    (weight_tons*500)/1000),
+    (weight_tons*500)/30),
     year = as.integer(year),
     trash_data = "professor_tw")%>% 
   relocate(trash_data)
@@ -95,7 +95,7 @@ gwynnda_trash_wheel=
   readxl::read_excel(paste0(project.folder,"/data/202309 Trash Wheel Collection Data.xlsx"), sheet=4, range = "A2:L157") %>% 
   janitor::clean_names() %>% 
   mutate(homes_powered=(
-    (weight_tons*500)/1000), 
+    (weight_tons*500)/30), 
     year = as.integer(year), 
     trash_data = "gwynnda_tw")%>% 
   relocate(trash_data)
